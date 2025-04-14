@@ -1,5 +1,10 @@
-let playerCount= 0;
+// Initialize player count
+let playerCount = 0;
+
+// List of player names
 let players = ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Hank", "Ivy", "Jack"];
+
+// List of games
 let games = [
     "League of Legends",
     "Dota 2",
@@ -18,52 +23,57 @@ let games = [
     "FIFA 23"
 ];
 
+// Initialize leaderboard and popular game tracking
 let leaderboard = new Map();
 let popularGame = [];
 
+// Map to store player data
 let playerMap = new Map();
 
+// Function to create a player
 function createPlayer(name) {
     playerCount++;
-    let games = new Set();
+    let games = new Set(); // Set to store unique games for the player
     const player = {
         name: name,
         id: playerCount,
         games: games,
-        scores: [],
-        average: []
+        scores: [], // Array to store scores for games
+        average: [] // Array to store average scores for games
     };
-    playerMap.set(name, player);
+    playerMap.set(name, player); // Add player to the map
     return player;
 }
 
+// Function to add a game to a player's list
 function addGame(playerId, game) {
     if (playerMap.has(playerId)) {
         let player = playerMap.get(playerId);
         if (!player.games.has(game)) {
-            player.games.add(game);
-        }
-        else{
+            player.games.add(game); // Add game if not already present
+        } else {
             console.log(`Game ${game} already exists for player ${playerId}`);
         }
     }
 }
 
-function playedGame(playerId, game,score) {
+// Function to record a game played by a player with a score
+function playedGame(playerId, game, score) {
     if (playerMap.has(playerId)) {
-        let player = playerMap.get(playerId) 
+        let player = playerMap.get(playerId);
         if (player.games.has(game)) {
             let round = 1;
             for (let i in player.scores) {
-                if (player.scores[i][0] == game ) {
-                    round ++;
-                }    
+                if (player.scores[i][0] == game) {
+                    round++;
+                }
             }
-            player.scores.push([game,round,score])
+            player.scores.push([game, round, score]); // Add game, round, and score
         }
     }
 }
 
+// Function to calculate and store the average score for a game
 function makeAverage(playerId, game) {
     if (playerMap.has(playerId)) {
         let player = playerMap.get(playerId);
@@ -74,125 +84,139 @@ function makeAverage(playerId, game) {
                 if (player.scores[i][0] == game) {
                     average += player.scores[i][2];
                     count++;
-                }    
+                }
             }
-            player.average.push([game, Math.round(average/count)]);
-        
-        }
-        else {
+            player.average.push([game, Math.round(average / count)]); // Store average score
+        } else {
             console.log(`Game ${game} does not exist for player ${playerId}`);
         }
     }
-
 }
 
-function CreateGameLeaderboard(game){
-    players = []
+// Function to create a leaderboard for a specific game
+function CreateGameLeaderboard(game) {
+    players = [];
     for (let [key, value] of playerMap) {
         if (value.games.has(game)) {
             let average = 0;
             for (let i in value.average) {
                 if (value.average[i][0] == game) {
                     average = value.average[i][1];
-                }    
+                }
             }
-            players.push([value.name, average])
+            players.push([value.name, average]); // Add player and their average score
         }
     }
-    players.sort((a, b) => b[1] - a[1]);
-    return players
+    players.sort((a, b) => b[1] - a[1]); // Sort players by score
+    return players;
 }
 
+// Function to create a leaderboard for all games
 function CreateLeaderboard() {
-    for (game in games){
+    for (game in games) {
         gameLead = CreateGameLeaderboard(games[game]);
         if (gameLead.length > 0) {
-            leaderboard.set(games[game], gameLead);
+            leaderboard.set(games[game], gameLead); // Add game leaderboard to the map
         }
     }
     for (let [key, value] of leaderboard) {
-        console.log(key+": ");
+        console.log(key + ": ");
         for (let i in value) {
-            console.log( (parseInt(i)+1)+ ". " + value[i][0] + " - " + value[i][1]);
+            console.log((parseInt(i) + 1) + ". " + value[i][0] + " - " + value[i][1]);
         }
         console.log("");
     }
 }
 
-function PopularGame(){
-    for (game in games){
-        let appear = 0
-        for (let [key, value] of playerMap){
+// Function to determine the most popular games
+function PopularGame() {
+    for (game in games) {
+        let appear = 0;
+        for (let [key, value] of playerMap) {
             if (value.games.has(games[game])) {
                 appear++;
             }
         }
-        popularGame.push([games[game], appear])
+        popularGame.push([games[game], appear]); // Add game and its popularity count
     }
-    popularGame.sort((a, b) => b[1] - a[1]);
+    popularGame.sort((a, b) => b[1] - a[1]); // Sort games by popularity
 }
 
-
-//create players
+// Create players
 for (let i in players) {
     createPlayer(players[i]);
 }
 
-//setting random games for players
+// Assign random games to players
 for (let i in players) {
-    for (let i = 0; i < (Math.floor(Math.random() * 4)+2); i++) {
+    for (let i = 0; i < (Math.floor(Math.random() * 4) + 2); i++) {
         addGame(players[i], games[Math.floor(Math.random() * games.length)]);
     }
 }
 
-//deleting players with no games seleceted
+// Remove players with no games selected
 for (let [key, value] of playerMap) {
     if (value.games.size === 0) {
         playerMap.delete(key);
     }
 }
 
-//adding a random number of rounds played and random scores for each game for each player
-for (let [key,value] of playerMap) {
+// Add random scores and rounds for each game for each player
+for (let [key, value] of playerMap) {
     for (let game of value.games) {
-        for (let i = 0; i < (Math.floor(Math.random() * 2)+1); i++) {
+        for (let i = 0; i < (Math.floor(Math.random() * 2) + 1); i++) {
             playedGame(key, game, Math.floor(Math.random() * 100));
         }
-        makeAverage(key, game);
+        makeAverage(key, game); // Calculate average score
     }
 }
 
-//create player summary
+// Display player summary
 console.log(`
-Player summary:`)
-for (let [key,value] of playerMap){
+Player summary:`);
+for (let [key, value] of playerMap) {
     console.log(`   
         ${value.name}:
-    `)
+    `);
     console.log(`Games:
-        `)
+        `);
     for (let game of value.games) {
         console.log(game, " - ", value.scores.filter(score => score[0] == game).length, " rounds played");
         console.log(`   highest score: ` + Math.max(...value.scores.filter(score => score[0] == game).map(score => score[2])));
     }
 }
 
-
-
+// Determine and display the most popular games
 PopularGame();
-
 console.log(`
     Most popular games:
-    `)
+    `);
 for (let i in popularGame) {
-    console.log( (parseInt(i)+1)+ ". " + popularGame[i][0] + " - " + popularGame[i][1]);
+    console.log((parseInt(i) + 1) + ". " + popularGame[i][0] + " - " + popularGame[i][1]);
 }
 
-
-//create leaderboard
+// Create and display the leaderboard
 console.log(`
     Highest average scores per game:
-    `)
+    `);
 CreateLeaderboard();
 
-
+// Display overall highest average scores
+console.log(`
+    highest average scores overall:
+    `);
+let avg = [];
+for (let [key, value] of playerMap) {
+    let num = 0;
+    let len = 0;
+    for (let i in value.average) {
+        num += value.average[i][1];
+        len++;
+    }
+    num = Math.round(num / len);
+    avg.push([key, num]);
+}
+avg.sort((a, b) => b[1] - a[1]);
+for (let i in avg) {
+    console.log((parseInt(i) + 1) + ". " + avg[i][0] + " - " + avg[i][1]);
+}
