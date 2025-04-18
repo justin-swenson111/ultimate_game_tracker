@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Game Tracker</title>
+    <link rel="stylesheet" href="styles/css/styles.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Ultimate Game Tracker</h1>
+    </header>
+    <main>
+
+        <div class="main1">
+
+            <section class="content">
+            <article>
+                <h2>Game List</h2>
+                <div id="gameList"></div>
+            </article>
+            </section>
+
+            <section class="content inp">
+            <article>
+                <h2>Add a player</h2>
+                <label for="player">Player Name:</label>
+                <input type="text" id="player" name="player" required>
+                <br>
+                <button id="playerAdd">Add</button>
+            </article>
+
+            <article>
+
+                <h2>Add player information</h2>
+                <label for="FindPlayer">Choose Player</label>
+                <select name="" id="FindPlayer" required></select>
+                <br>
+
+                <label for="playerGame">Add a game:</label>
+                <select id="playerGame" name="player-game" required></select>
+
+                <br>
+                <button id="GameAdd">Add</button>
+            </article>
+
+            <article>
+                <h2>player Game Performance</h2>
+
+                <label for="ChoosePlayer">Choose a Player:</label>
+                <select name="" id="ChoosePlayer" required  onclick="available()"></select>
+                <br>
+
+                <label for="gameChoose">Select what game you are scoring:</label>
+                <select id="gameChoose" name="game-choose" required></select>
+                <br>
+
+                <label for="game-score">Score:</label>
+                <input type="number" id="game-score" name="game-score" required>
+                <br>
+
+                <button id="scoreSubmit" >Add</button>
+            </article>
+
+            </section>
+
+        </div>
+
+        <div class="main2">
+
+            <section class="content">
+
+            <article>
+                <h2>Player List</h2>
+                <button onclick="" id="playRef">Refresh</button>
+                <div id="playerList"></div>
+            </article>
+            </section>
+
+
+            <section class="content">
+
+            <article>
+                <h2>Game Leaderboards</h2>
+                <button onclick="" id="lead">Refresh</button>
+                <div id="leaderboard">
+
+                </div>
+            </article>
+            </section>
+
+            <section class="content">
+            <article>
+                <h2>Highest Average Score</h2>
+                <button id="ave">Refresh</button>
+
+                <div id="highAve"></div>
+            </article>
+
+            <article>
+                <h2>Most Popular Games</h2>
+                <button onclick="" id="pop">Refresh</button>
+
+                <div id="popGame"></div>
+            </article>
+            </section>
+
+        </div>
+
+    </main>
+</body>
+<script src="script.js"></script>
+<script>
+    $(document).ready(function() {
+        games = games.sort((a, b) => a.localeCompare(b));
+        if (localStorage.getItem("playerMap") != null) {
+            playerMap = new Map(JSON.parse(localStorage.getItem("playerMap")));
+        } 
+        console.log(playerMap)
+        for (let [key, value] of playerMap) {
+            let gameList = Array.from(value.games);
+            console.log(value.games)
+            for (let i in gameList) {
+                console.log(gameList[i])
+            }
+            value.games = new Set(gameList);
+        }
+
+
+        
+
+    const createAndAppend = (tag, parent, attributes={}, content="")=>{
+        const element = document.createElement(tag)
+        Object.keys(attributes).forEach(key=>element.setAttribute(key,attributes[key]))
+        element.innerHTML = content
+        parent.appendChild(element)
+        return element
+    }
+
+    $("#lead").click(function(){
+        refresh()
+    })
+    function refresh(){
+        const leaderboardDiv = document.getElementById("leaderboard")
+        leaderboardDiv.innerHTML = ""
+        for (let [key, value] of playerMap) {
+            for (let game of value.games) {
+                makeAverage(key, game); // Calculate average score
+            }
+        }
+        CreateLeaderboard()
+        for ([key, value] of leaderboard) {
+            const content = `<div id="gameName"><h3>${key}</h3><button id="gameSection">+</button></div>`
+            const div = createAndAppend("div",leaderboardDiv,{"class":"game"},content)
+            const innerDiv = createAndAppend("div",div,{"class":"players"})
+            for (let i in value) {
+                createAndAppend("div",innerDiv,{"class":"score"},`<h4>${parseInt(i)+1}. ${value[i][0]} - ${value[i][1]}</h4>`)
+            }
+        }
+        $(".players").slideUp(10);
+    }
+
+    $(document).on("click", "#gameSection", function() {
+        const playersDiv = $(this).parent().parent().children().eq(1);
+        if (playersDiv.is(":visible")) {
+            playersDiv.slideUp(1000);
+            $(this).text("+");
+        } else {
+            playersDiv.slideDown(1000);
+            $(this).text("-");
+        }
+        
+    });
+    $(document).on("click", "#playSection", function() {
+        const playersDiv = $(this).parent().parent().children().eq(1);
+        if (playersDiv.is(":visible")) {
+            playersDiv.slideUp(1000);
+            $(this).text("+");
+        } else {
+            playersDiv.slideDown(1000);
+            $(this).text("-");
+        }
+        
+    });
+
+    for (let i in games){
+        const game = games[i]
+        createAndAppend("option",document.getElementById("playerGame"),{"value":game},game)
+        createAndAppend("div",document.getElementById("gameList"),{"class":"game"},`<p>${game}</p>`)
+    }
+
+
+    const addPlayer = document.getElementById("playerAdd")
+    const name = document.getElementById("player").value
+    const FindPlayer = document.getElementById("FindPlayer")
+    const ChoosePlayer = document.getElementById("ChoosePlayer")
+    const scoreSubmit = document.getElementById("scoreSubmit")
+    const playerList = document.getElementById("playerList")
+    const ave = document.getElementById("ave")
+    const pop = document.getElementById("pop")
+    const playRef = document.getElementById("playRef")
+
+    playRef.onclick = function(){
+        playListRefresh()
+    }
+
+
+
+
+    addPlayer.onclick = function(){
+        const name = document.getElementById("player").value
+        if (name.length > 0){
+            if (playerMap.has(name)){
+                alert("Player already exists")
+            }else{
+                createPlayer(name)
+                createAndAppend("option",FindPlayer,{"value":name},name)
+                createAndAppend("option",ChoosePlayer,{"value":name},name)
+            }
+        }else{
+            alert("Please enter a name")
+        }
+    }
+
+    function playListRefresh(){
+        playerList.innerHTML = ""
+        for (let [key, value] of playerMap) {
+            for (let game of value.games) {
+                makeAverage(key, game); // Calculate average score
+            }
+            const content = `<div id="playName"><h3>${key}</h3><button id="playSection">+</button></div>`
+            const div = createAndAppend("div",playerList,{},content)
+            let playgame= value.games
+            playgame=Array.from(playgame)
+            console.log(key,value)
+            const overallAvg = createAverage(key)[1]
+            const avgByGame= value.average
+            console.log(value.average)
+            const innerDiv =createAndAppend("div",div,{"class":"playStats"},)
+            createAndAppend("div",innerDiv,{"class":"games"},`All games played: <br><br>${playgame.join(', ')}`)
+            createAndAppend("div",innerDiv,{"class":"score"},`<h4>Overall Average Score: ${overallAvg}</h4>`)
+            createAndAppend("div",innerDiv,{"class":"score"},`<h4>Average Score by Game:</h4>`)
+            const list = createAndAppend("dl",innerDiv,{"id":"avg"},"")
+            for (let i in avgByGame){
+                const game = avgByGame[i][0]
+                const score = avgByGame[i][1]
+                createAndAppend("dt",list,{"class":"game"},`${game}: ${score}`)
+            }
+            continue
+        }
+        $(".playStats").each(function() {
+            $(this).slideUp(10);
+        });
+    }
+
+
+    const GameAdd = document.getElementById("GameAdd")
+    GameAdd.onclick = function(){
+        const playerName = document.getElementById("FindPlayer").value
+        const gameName = document.getElementById("playerGame").value
+        addGame(playerName,gameName)
+        available()        
+    }
+
+    scoreSubmit.onclick = function(){
+        const playerName = document.getElementById("ChoosePlayer").value
+        const gameName = document.getElementById("gameChoose").value
+        const score = document.getElementById("game-score").value
+        const scoreInt = parseInt(score, 10);
+        playedGame(playerName,gameName,scoreInt)
+    }
+
+    ChoosePlayer.onclick = function(){
+        available()
+    }
+
+    function available(){
+        let player = playerMap.get(ChoosePlayer.value)
+        let PlayerGames = player.games
+        const gameChoose = document.getElementById("gameChoose")
+        gameChoose.innerHTML = ""
+        PlayerGames= Array.from(PlayerGames)
+        for (let game in PlayerGames){
+            createAndAppend("option",gameChoose,{"value":PlayerGames[game]},PlayerGames[game])
+        }
+
+    }
+
+    function createAverage(playerKey){
+        const player = playerMap.get(playerKey)
+        if (player.average.length == 0){
+            return [player.name, 0]
+        }
+        let num = 0;
+            let len = 0;
+            for (let i in player.average) {
+                num += player.average[i][1];
+                len++;
+            }
+            num = Math.round(num / len);
+        return [player.name, num];
+    }
+
+    ave.onclick = function(){
+        aveRefresh()
+    }
+    function aveRefresh(){
+        const highAveDiv = document.getElementById("highAve")
+        highAveDiv.innerHTML = ""
+        for (let [key, value] of playerMap) {
+            for (let game of value.games) {
+                makeAverage(key, game); // Calculate average score
+            }
+        }
+        let avg= []
+        for (let [key, value] of playerMap) {
+            avg.push(createAverage(key)); // Calculate average score
+        }
+        avg.sort((a, b) => b[1] - a[1]);
+        for (i in avg){
+            const content = (parseInt(i) + 1) + ". " + avg[i][0] + " - " + avg[i][1]
+            const tag = createAndAppend("div",highAveDiv,{"class":"playList"},content)
+        }
+    }
+
+
+    pop.onclick = function(){
+        const popGameDiv = document.getElementById("popGame")
+        popGameDiv.innerHTML = ""
+        popularGame = []
+        PopularGame()
+        for (i in popularGame){
+            const content = (parseInt(i) + 1) + ". " + popularGame[i][0] + " - " + popularGame[i][1]
+            createAndAppend("div",popGameDiv,{"class":"popGame"},content)
+        }
+    }
+
+    function Start(){
+        for (let [key, value] of playerMap) {
+            // createPlayer(name)
+            createAndAppend("option",FindPlayer,{"value":name},name)
+            createAndAppend("option",ChoosePlayer,{"value":name},name)
+            let gameList = new Set()
+            refresh()
+            playListRefresh()
+            aveRefresh()
+        }
+    }
+
+    Start()
+
+
+});
+
+
+
+
+
+</script>
+</html>
