@@ -114,18 +114,6 @@
 <script>
     $(document).ready(function() {
         games = games.sort((a, b) => a.localeCompare(b));
-        if (localStorage.getItem("playerMap") != null) {
-            playerMap = new Map(JSON.parse(localStorage.getItem("playerMap")));
-        } 
-        console.log(playerMap)
-        for (let [key, value] of playerMap) {
-            let gameList = Array.from(value.games);
-            console.log(value.games)
-            for (let i in gameList) {
-                console.log(gameList[i])
-            }
-            value.games = new Set(gameList);
-        }
 
 
         
@@ -335,20 +323,6 @@
             createAndAppend("div",popGameDiv,{"class":"popGame"},content)
         }
     }
-
-    function Start(){
-        for (let [key, value] of playerMap) {
-            // createPlayer(name)
-            createAndAppend("option",FindPlayer,{"value":name},name)
-            createAndAppend("option",ChoosePlayer,{"value":name},name)
-            let gameList = new Set()
-            refresh()
-            playListRefresh()
-            aveRefresh()
-        }
-    }
-
-    Start()
 
 
 });

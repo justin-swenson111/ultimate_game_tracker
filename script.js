@@ -44,7 +44,6 @@ function createPlayer(name) {
     const playerID = playerMap.get(name);
     alert(`Player ${name} created`);
     playerID.games = Array.from(player.games);
-    localStorage.setItem("playerMap", JSON.stringify(Array.from(playerMap.entries())));
     playerID.games = new Set(player.games);
     return player;
 }
@@ -57,7 +56,6 @@ function addGame(playerId, game) {
             player.games.add(game); // Add game if not already present
             alert(`Game ${game} added for player ${playerId}`);
             player.games = Array.from(player.games);
-            localStorage.setItem("playerMap", JSON.stringify(Array.from(playerMap.entries())));
             player.games = new Set(player.games);
 
 
@@ -80,17 +78,10 @@ function playedGame(playerId, game, score) {
             }
             player.scores.push([game, round, score]); // Add game, round, and score
         
-            // Convert the Set to an array before saving
-            player.games = Array.from(player.games);
-        
-            // Save the updated playerMap to localStorage
-            player.games = Array.from(player.games);
-            localStorage.setItem("playerMap", JSON.stringify(Array.from(playerMap.entries())));
-            player.games = new Set(player.games);
+
         
             alert(`Game ${game} played by player ${playerId} with score ${score}`);
         
-            // Convert the array back to a Set after saving
         
             // console.log(playerMap.get(playerId).scores); // Log scores for debugging
         }
@@ -120,9 +111,6 @@ function makeAverage(playerId, game) {
                 return;
             }
             player.average.push([game, Math.round(average / count)]); // Store average score
-            player.games = Array.from(player.games);
-            localStorage.setItem("playerMap", JSON.stringify(Array.from(playerMap.entries())));
-            player.games = new Set(player.games);
 
 
         } else {
